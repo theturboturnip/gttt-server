@@ -1,1 +1,1 @@
-web: python ./gttt/server.py 80
+web: python ./gttt/server.py 0
