@@ -6,7 +6,7 @@ import urlparse
 
 urlparse.uses_netloc.append("postgres")
 db_url = urlparse.urlparse(os.environ["DATABASE_URL"])
-port = int(os.environ["PORT_NUMBER"])
+port = int(os.environ["PORT"])
 print (port)
 sys.stdout.flush()
 
