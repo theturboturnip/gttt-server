@@ -59,6 +59,8 @@ try:
 	#Create a web server and define the handler to manage the
 	#incoming request
 	PORT_NUMBER=int(sys.argv[1])
+	if PORT_NUMBER<0:
+		PORT_NUMBER=port
 	server = HTTPServer(('', PORT_NUMBER), GTTTRequestHandler)
 	print 'Started httpserver on port ' , PORT_NUMBER
 	sys.stdout.flush()
