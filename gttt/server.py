@@ -23,7 +23,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 			self.wfile.write("Send me your hiscores")
 		elif self.path=="/get_hiscore":
 			self.wfile.write("Have some delicious hiscores")
-			hiscore_string=get_hiscores(1)
+			hiscore_string=self.get_hiscores(1)
 			print hiscore_string
 			self.wfile.write("\n"+hiscore_string)
 		else:
