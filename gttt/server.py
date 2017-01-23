@@ -41,7 +41,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		)
 		cur=db_conn.cursor()
 		cur.execute("CREATE TABLE LVL"+str(level)+" (id serial PRIMARY KEY,time float);")
-		cur.execute("INSERT INTO LVL"+str(level)+" (time) VALUES 3")
+		cur.execute("INSERT INTO LVL"+str(level)+" (time) VALUES (3)")
 		cur.execute("SELECT * FROM LVL"+str(level)+" ORDER BY time ASC;")
 		#select from lvl x and sort by time asc
 		hiscores=cur.fetchall()
