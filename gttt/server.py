@@ -61,7 +61,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		#except ProgrammingError:
 		#cur.execute("SELECT * FROM LVL"+str(level)+" ORDER BY time ASC;")"""
 		try:
-			cur.execute("CREATE TABLE TIMES (id serial PRIMARY KEY,ip varchar,LVL1 float,LVL2 float,LVL3 float);")
+			cur.execute("CREATE TABLE IF NOT EXISTS TIMES (id serial PRIMARY KEY,ip varchar,LVL1 float,LVL2 float,LVL3 float);")
 			#cur.execute("INSERT INTO LVL"+str(level)+" (time) VALUES (3)")
 		except:
 			pass #the table already existed
@@ -121,6 +121,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 			cur.execute("CREATE TABLE TIMES (id serial PRIMARY KEY,IP varchar,LVL1 float,LVL2 float,LVL3 float);")
 			#cur.execute("INSERT INTO LVL"+str(level)+" (time) VALUES (3)")
 		except:
+			traceback.print_exc()
 			pass #the table already existed
 		cur.execute("SELECT * FROM TIMES WHERE IP=\'"+ip+"\';")
 		player_row=cur.fetchone()
