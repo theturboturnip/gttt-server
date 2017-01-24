@@ -97,7 +97,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		#cur.execute("SELECT PROC-"+procgen_seed+" FROM TIMES")
 		#if (cur.fetchone() is None):
 		#	cur.execute("ALTER TABLE TIMES ADD PROC-"+procgen_seed+" float")
-		cur.execute("SELECT * FROM TIMES WHERE LEVEL=\'"+level"\' ORDER BY time ASC;")
+		cur.execute("SELECT * FROM TIMES WHERE LEVEL=\'"+level+"\' ORDER BY time ASC;")
 		#select from lvl x and sort by time asc
 		hiscores=cur.fetchall()
 		
