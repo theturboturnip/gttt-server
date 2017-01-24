@@ -28,8 +28,10 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 			ip=split_path[2]
 			time=float(split_path[3])
 			try:
-				self.add_hiscore(level,time,ip)
-				self.wfile.write("Added time "+str(time)+" to ip "+ip+" on level "+str(level))
+				if self.add_hiscore(level,time,ip):
+					self.wfile.write("Added time "+str(time)+" to ip "+ip+" on level "+str(level))
+				else:
+					self.wfile.write("Didn't add time, probably because it was longer than before")
 			except:
 				self.wfile.write("Failed to add time, something went wrong")
 				traceback.print_exc()
@@ -61,7 +63,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		#except ProgrammingError:
 		#cur.execute("SELECT * FROM LVL"+str(level)+" ORDER BY time ASC;")"""
 		try:
-			cur.execute("CREATE TABLE TIMES (id serial PRIMARY KEY,ip varchar,LVL1 float,LVL2 float,LVL3 float);")
+			cur.execute("CREATE TABLE IF NOT EXISTS TIMES (id serial PRIMARY KEY,ip varchar,LVL1 float,LVL2 float,LVL3 float);")
 			#cur.execute("INSERT INTO LVL"+str(level)+" (time) VALUES (3)")
 		except:
 			pass #the table already existed
@@ -88,7 +90,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		)
 		cur=db_conn.cursor()
 		try:
-			cur.execute("CREATE TABLE TIMES (id serial PRIMARY KEY,IP varchar,LVL1 float,LVL2 float,LVL3 float);")
+			cur.execute("CREATE TABLE IF NOT EXISTS TIMES (id serial PRIMARY KEY,IP varchar,LVL1 float,LVL2 float,LVL3 float);")
 			#cur.execute("INSERT INTO LVL"+str(level)+" (time) VALUES (3)")
 		except:
 			pass #the table already existed
@@ -123,15 +125,19 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		except:
 			traceback.print_exc()
 			pass #the table already existed
-		cur.execute("SELECT * FROM TIMES WHERE IP=\'"+ip+"\';")
+		cur.execute("SELECT LVL"+str(level)+" FROM TIMES WHERE IP=\'"+ip+"\';")
 		player_row=cur.fetchone()
+		to_return=True
 		if player_row is None:
 			cur.execute("INSERT INTO TIMES (IP,LVL"+str(level)+") VALUES (\'"+ip+"\',"+str(time)+");")
+		elif player_row[0]>time:
+			cur.execute("UPDATE TIMES SET LVL"+str(level)+"="+str(time)+" WHERE IP='"+ip+"';"
 		else:
-			cur.execute("UPDATE TIMES SET LVL"+str(level)+"="+str(time)+" WHERE IP='"+ip+"';")
+			to_return=False
 		db_conn.commit()
 		cur.close()
 		db_conn.close()
+		return to_return
 
 	def add_procgen_hiscore(self,procgen_seed,time,ip):
 		db_conn = psycopg2.connect(
@@ -143,18 +149,18 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		)
 		cur=db_conn.cursor()
 		try:
-			cur.execute("CREATE TABLE TIMES (id serial PRIMARY KEY,IP varchar,LVL1 float,LVL2 float,LVL3 float);")
+			cur.execute("CREATE TABLE IF NOT EXISTS TIMES (id serial PRIMARY KEY,IP varchar,LVL1 float,LVL2 float,LVL3 float);")
 			#cur.execute("INSERT INTO LVL"+str(level)+" (time) VALUES (3)")
 		except:
 			pass #the table already existed
 		cur.execute("SELECT PROC-"+procgen_seed+" FROM TIMES")
 		if (cur.fetchone() is None):
 			cur.execute("ALTER TABLE TIMES ADD PROC-"+procgen_seed+" float")
-		cur.execute("SELECT * FROM TIMES WHERE IP=\'"+ip+"\';")
+		cur.execute("SELECT PROC-"+procgen_seed+" FROM TIMES WHERE IP=\'"+ip+"\';")
 		player_row=cur.fetchone()
 		if player_row is None:
 			cur.execute("INSERT INTO TIMES (IP,PROC-"+procgen_seed+") VALUES (\'"+ip+"\',"+str(time)+");")
-		else:
+		elif player_row[0]>time:
 			cur.execute("UPDATE TIMES SET PROC-"+procgen_seed+"="+str(time)+" WHERE IP='"+ip+"';")
 		db_conn.commit()
 		cur.close()
