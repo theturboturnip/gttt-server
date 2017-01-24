@@ -108,7 +108,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		hiscore_string=""
 		for hiscore in hiscores:
 			print hiscore
-			hiscore_string+=str(hiscore[2])+"\n"
+			hiscore_string+=str(hiscore[3])+"\n"
 		return hiscore_string
 
 	def add_level_time(self,level,time,ip):
@@ -126,7 +126,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		to_return=True
 		if player_row is None:
 			cur.execute("INSERT INTO TIMES (IP,LEVEL,time) VALUES (\'"+ip+"\',\'"+level+"\',"+str(time)+");")
-		elif player_row[2]>time:
+		elif player_row[3]>time:
 			cur.execute("UPDATE TIMES SET time="+str(time)+" WHERE IP=\'"+ip+"\' AND LEVEL=\'"+level+"\';")
 		else:
 			to_return=False
