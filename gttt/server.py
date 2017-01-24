@@ -5,7 +5,10 @@ import psycopg2
 import urlparse
 
 urlparse.uses_netloc.append("postgres")
-db_url = urlparse.urlparse(os.environ["DATABASE_URL"])
+try:
+	db_url = urlparse.urlparse(os.environ["DATABASE_URL"])
+except:
+	pass
 port = int(os.environ["PORT"])
 print (port)
 sys.stdout.flush()
@@ -17,13 +20,24 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		self.send_response(200)
 		self.send_header('content-type','text/html')
 		self.end_headers()
-		if (self.path=="/" or self.path=="/version"):
+		split_path=filter(None,self.path.split("/"))
+		if (split_path==[] or split_path[0]=="version"):
 			self.wfile.write("1.0.0")
-		elif self.path=="/submit_hiscore":
-			self.wfile.write("Send me your hiscores")
-		elif self.path=="/get_hiscore":
+		elif split_path[0]=="submit_time" and len(split_path)>=4:
+			level=int(split_path[1])
+			ip=split_path[2]
+			time=float(split_path[3])
+			try:
+				self.add_hiscore(level,time,ip)
+				self.wfile.write("Added time "+str(time)+" to ip "+ip+" on level "+str(level))
+			except:
+				self.wfile.write("Failed to add time, something went wrong")
+				print "FAILED TO ADD TIME"
+
+			#interpret 
+		elif split_path[0]=="get_times":
 			self.wfile.write("Have some delicious hiscores")
-			hiscore_string=self.get_hiscores(1)
+			hiscore_string=self.get_hiscores(int(split_path[1]))
 			print hiscore_string
 			self.wfile.write("\n"+hiscore_string)
 		else:
@@ -40,9 +54,17 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
     		port=db_url.port
 		)
 		cur=db_conn.cursor()
-		cur.execute("CREATE TABLE LVL"+str(level)+" (id serial PRIMARY KEY,time float);")
-		cur.execute("INSERT INTO LVL"+str(level)+" (time) VALUES (3)")
-		cur.execute("SELECT * FROM LVL"+str(level)+" ORDER BY time ASC;")
+		#"""try:
+		#	cur.execute("CREATE TABLE LVL"+str(level)+" (id serial PRIMARY KEY,ip varchar,time float);")
+		#	#cur.execute("INSERT INTO LVL"+str(level)+" (time) VALUES (3)")
+		#except ProgrammingError:
+		#cur.execute("SELECT * FROM LVL"+str(level)+" ORDER BY time ASC;")"""
+		try:
+			cur.execute("CREATE TABLE TIMES (id serial PRIMARY KEY,ip varchar,LVL1 float,LVL2 float,LVL3 float);")
+			#cur.execute("INSERT INTO LVL"+str(level)+" (time) VALUES (3)")
+		except ProgrammingError:
+			pass #the table already existed
+		cur.execute("SELECT LVL"+str(level)+" FROM TIMES ORDER BY LVL"+str(level)+" ASC;")
 		#select from lvl x and sort by time asc
 		hiscores=cur.fetchall()
 		
@@ -52,8 +74,90 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		#convert to string
 		hiscore_string=""
 		for hiscore in hiscores:
-			hiscore_string+=str(hiscore[1])+"\n"
+			hiscore_string+=str(hiscore[0])+"\n"
 		return hiscore_string
+
+	def get_procgen_hiscore(self,procgen_seed):
+		db_conn = psycopg2.connect(
+    		database=db_url.path[1:],
+    		user=db_url.username,
+    		password=db_url.password,
+    		host=db_url.hostname,
+    		port=db_url.port
+		)
+		cur=db_conn.cursor()
+		try:
+			cur.execute("CREATE TABLE TIMES (id serial PRIMARY KEY,IP varchar,LVL1 float,LVL2 float,LVL3 float);")
+			#cur.execute("INSERT INTO LVL"+str(level)+" (time) VALUES (3)")
+		except ProgrammingError:
+			pass #the table already existed
+		cur.execute("SELECT PROC-"+procgen_seed+" FROM TIMES")
+		if (cur.fetchone() is None):
+			cur.execute("ALTER TABLE TIMES ADD PROC-"+procgen_seed+" float")
+		cur.execute("SELECT PROC-"+procgen_seed+" FROM TIMES ORDER BY PROC-"+procgen_seed+" ASC;")
+		#select from lvl x and sort by time asc
+		hiscores=cur.fetchall()
+		
+		db_conn.commit()
+		cur.close()
+		db_conn.close()
+		#convert to string
+		hiscore_string=""
+		for hiscore in hiscores:
+			hiscore_string+=str(hiscore[0])+"\n"
+		return hiscore_string
+
+	def add_hiscore(self,level,time,ip):
+		db_conn = psycopg2.connect(
+    		database=db_url.path[1:],
+    		user=db_url.username,
+    		password=db_url.password,
+    		host=db_url.hostname,
+    		port=db_url.port
+		)
+		cur=db_conn.cursor()
+		try:
+			cur.execute("CREATE TABLE TIMES (id serial PRIMARY KEY,IP varchar,LVL1 float,LVL2 float,LVL3 float);")
+			#cur.execute("INSERT INTO LVL"+str(level)+" (time) VALUES (3)")
+		except ProgrammingError:
+			pass #the table already existed
+		cur.execute("SELECT * FROM TIMES WHERE IP=\'"+ip+"\';")
+		player_row=cur.fetchone()
+		if player_row is None:
+			cur.execute("INSERT INTO TIMES (IP,LVL"+str(level)+") VALUES (\'"+ip+"\',"+str(time)+");")
+		else:
+			cur.execute("UPDATE TIMES SET LVL"+str(level)+"="+str(time)+" WHERE IP='"+ip+"';")
+		db_conn.commit()
+		cur.close()
+		db_conn.close()
+
+	def add_procgen_hiscore(self,procgen_seed,time,ip):
+		db_conn = psycopg2.connect(
+    		database=db_url.path[1:],
+    		user=db_url.username,
+    		password=db_url.password,
+    		host=db_url.hostname,
+    		port=db_url.port
+		)
+		cur=db_conn.cursor()
+		try:
+			cur.execute("CREATE TABLE TIMES (id serial PRIMARY KEY,IP varchar,LVL1 float,LVL2 float,LVL3 float);")
+			#cur.execute("INSERT INTO LVL"+str(level)+" (time) VALUES (3)")
+		except ProgrammingError:
+			pass #the table already existed
+		cur.execute("SELECT PROC-"+procgen_seed+" FROM TIMES")
+		if (cur.fetchone() is None):
+			cur.execute("ALTER TABLE TIMES ADD PROC-"+procgen_seed+" float")
+		cur.execute("SELECT * FROM TIMES WHERE IP=\'"+ip+"\';")
+		player_row=cur.fetchone()
+		if player_row is None:
+			cur.execute("INSERT INTO TIMES (IP,PROC-"+procgen_seed+") VALUES (\'"+ip+"\',"+str(time)+");")
+		else:
+			cur.execute("UPDATE TIMES SET PROC-"+procgen_seed+"="+str(time)+" WHERE IP='"+ip+"';")
+		db_conn.commit()
+		cur.close()
+		db_conn.close()
+
 
 try:
 	#Create a web server and define the handler to manage the
@@ -62,7 +166,7 @@ try:
 	if PORT_NUMBER<0:
 		PORT_NUMBER=port
 	server = HTTPServer(('', PORT_NUMBER), GTTTRequestHandler)
-	print 'Started httpserver on port ' , PORT_NUMBER
+	print 'Started httpserver on port' , PORT_NUMBER
 	sys.stdout.flush()
 	#Wait forever for incoming htto requests
 	server.serve_forever()
