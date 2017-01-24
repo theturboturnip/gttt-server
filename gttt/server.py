@@ -126,7 +126,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		if player_row is None:
 			cur.execute("INSERT INTO TIMES (IP,LEVEL,time) VALUES (\'"+ip+"\',\'"+level+"\',"+str(time)+");")
 		elif player_row[2]>time:
-			cur.execute("UPDATE TIMES SET time="+str(time)+" WHERE IP=\'"+ip+"\' AND LEVEL=\'"+level"\';")
+			cur.execute("UPDATE TIMES SET time="+str(time)+" WHERE IP=\'"+ip+"\' AND LEVEL=\'"+level+"\';")
 		else:
 			to_return=False
 		db_conn.commit()
