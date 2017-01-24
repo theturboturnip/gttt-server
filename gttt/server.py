@@ -24,7 +24,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		if (split_path==[] or split_path[0]=="version"):
 			self.wfile.write("1.0.0")
 		elif split_path[0]=="submit_time" and len(split_path)>=4:
-			level=int(split_path[1])
+			level=split_path[1]
 			ip=split_path[2]
 			time=float(split_path[3])
 			try:
@@ -40,7 +40,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 			#interpret 
 		elif split_path[0]=="get_times":
 			self.wfile.write("Have some delicious hiscores")
-			hiscore_string=self.get_level_times(int(split_path[1]))
+			hiscore_string=self.get_level_times(split_path[1])
 			print hiscore_string
 			self.wfile.write("\n"+hiscore_string)
 		else:
