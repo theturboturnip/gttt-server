@@ -107,6 +107,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		#convert to string
 		hiscore_string=""
 		for hiscore in hiscores:
+			print hiscore
 			hiscore_string+=str(hiscore[2])+"\n"
 		return hiscore_string
 
@@ -155,7 +156,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		player_row=cur.fetchone()
 		if player_row is None:
 			cur.execute("INSERT INTO TIMES (IP,PROC-"+procgen_seed+") VALUES (\'"+ip+"\',"+str(time)+");")
-		elif player_row[0]>time:
+		elif player_row[2]>time:
 			cur.execute("UPDATE TIMES SET PROC-"+procgen_seed+"="+str(time)+" WHERE IP='"+ip+"';")
 		db_conn.commit()
 		cur.close()
