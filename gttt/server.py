@@ -2,7 +2,7 @@ from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 import sys
 import os
 import psycopg2
-import urlparse
+import urlparse,traceback
 
 urlparse.uses_netloc.append("postgres")
 try:
@@ -32,6 +32,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 				self.wfile.write("Added time "+str(time)+" to ip "+ip+" on level "+str(level))
 			except:
 				self.wfile.write("Failed to add time, something went wrong")
+				traceback.print_exc()
 				print "FAILED TO ADD TIME"
 
 			#interpret 
