@@ -22,7 +22,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 
 		if (split_path==[] or split_path[0]=="version"):
 			self.wfile.write("1.0.0")
-		elif split_path[0]=="submit_time" and len(split_path)>=4:
+		elif split_path[0]=="submit_time" and len(split_path)>=5:
 			#perform a verification check 
 			level=split_path[1]
 			ip=split_path[2]
@@ -32,11 +32,11 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 				if not verified:
 					raise ValueError("Client verification failed")
 				if self.add_level_time(level,time,ip):
-					self.wfile.write("Added time "+str(time)+" to ip "+ip+" on level "+str(level))
+					self.wfile.write("y\nAdded time "+str(time)+" to ip "+ip+" on level "+str(level))
 				else:
-					self.wfile.write("Didn't add time, probably because it was longer than before")
+					self.wfile.write("n\nDidn't add time, probably because it was longer than before")
 			except:
-				self.wfile.write("Failed to add time, something went wrong")
+				self.wfile.write("n\nFailed to add time, something went wrong")
 				traceback.print_exc()
 				print "FAILED TO ADD TIME"
 		elif split_path[0]=="get_times":
