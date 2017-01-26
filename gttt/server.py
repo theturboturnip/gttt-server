@@ -59,7 +59,6 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		#take the number, convert to string at 2d.p., concat with the ENCR_STRING environment var, md5, compare with hash string
 		hash_target="{0:.2f}".format(round(number,2))+os.environ["ENCR_STRING"]
 		hashed=hashlib.md5(hash_target).hexdigest()
-		print hashed,hash_given,hash_target
 		return (hashed==hash_given)
 
 	def get_level_times(self,level):
