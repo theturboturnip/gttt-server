@@ -1,5 +1,5 @@
 from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
-import urlparse,traceback,sys,os,hashlib
+import urlparse,traceback,sys,os,hashlib,time
 import psycopg2
 
 urlparse.uses_netloc.append("postgres")
@@ -26,13 +26,13 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 			#perform a verification check 
 			level=split_path[1]
 			ip=split_path[2]
-			time=float(split_path[3])
-			verified=self.verify_client(time,split_path[4])
+			time_taken=float(split_path[3])
+			verified=self.verify_client(time_taken,split_path[4])
 			try:
 				if not verified:
 					raise ValueError("Client verification failed")
-				if self.add_level_time(level,time,ip):
-					self.wfile.write("y\nAdded time "+str(time)+" to ip "+ip+" on level "+str(level))
+				if self.add_level_time(level,time_taken,ip):
+					self.wfile.write("y\nAdded time "+str(time_taken)+" to ip "+ip+" on level "+str(level))
 				else:
 					self.wfile.write("n\nDidn't add time, probably because it was longer than before")
 			except:
@@ -125,7 +125,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 			seed_string+=seed[0]+"\n"
 		return seed_string
 
-	def add_level_time(self,level,time,ip):
+	def add_level_time(self,level,time_taken,ip):
 		db_conn = psycopg2.connect(
     		database=db_url.path[1:],
     		user=db_url.username,
@@ -139,9 +139,9 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		player_row=cur.fetchone()
 		to_return=True
 		if player_row is None:
-			cur.execute("INSERT INTO TIMES (IP,LEVEL,time,time_played) VALUES (\'"+ip+"\',\'"+level+"\',"+str(time)+","+str(time.time())+");")
-		elif player_row[3]>time:
-			cur.execute("UPDATE TIMES SET time="+str(time)+" AND time_played="+str(time.time())+" WHERE IP=\'"+ip+"\' AND LEVEL=\'"+level+"\';")
+			cur.execute("INSERT INTO TIMES (IP,LEVEL,time,time_played) VALUES (\'"+ip+"\',\'"+level+"\',"+str(time_taken)+","+str(time.time())+");")
+		elif player_row[3]>time_taken:
+			cur.execute("UPDATE TIMES SET time="+str(time_taken)+" AND time_played="+str(time.time())+" WHERE IP=\'"+ip+"\' AND LEVEL=\'"+level+"\';")
 		else:
 			to_return=False
 		db_conn.commit()
