@@ -31,6 +31,8 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 			verified=self.verify_client(time_taken,split_path[4])
 			try:
 				if not verified:
+					print "Client verification failed"
+					self.wfile.write("Client verification failed")
 					raise ValueError("Client verification failed")
 				if self.add_level_time(level,time_taken,ip):
 					self.wfile.write("y\nAdded time "+str(time_taken)+" to ip "+ip+" on level "+str(level))
@@ -40,7 +42,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 				self.wfile.write("n\nFailed to add time, something went wrong")
 				traceb=str(e)
 				print e
-				self.wfile.write("\n"+traceb)
+				#self.wfile.write("\n"+traceb)
 				print "FAILED TO ADD TIME"
 		elif split_path[0]=="get_times" and len(split_path)>=2:
 			self.wfile.write("Have some delicious hiscores")
