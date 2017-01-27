@@ -5,8 +5,9 @@ import psycopg2
 urlparse.uses_netloc.append("postgres")
 try:
 	db_url = urlparse.urlparse(os.environ["DATABASE_URL"])
+	print "Connecting to database at "+os.environ["DATABASE_URL"]
 except:
-	pass
+	print "Failed to find database"
 PORT_NUMBER = int(os.environ["PORT"])
 print (PORT_NUMBER)
 sys.stdout.flush()
@@ -37,9 +38,10 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 					self.wfile.write("n\nDidn't add time, probably because it was longer than before")
 			except:
 				self.wfile.write("n\nFailed to add time, something went wrong")
-				traceback.print_exc()
+				traceb=traceback.print_exc()
+				self.wfile.write("\n"+traceb)
 				print "FAILED TO ADD TIME"
-		elif split_path[0]=="get_times":
+		elif split_path[0]=="get_times" and len(split_path)>=2:
 			self.wfile.write("Have some delicious hiscores")
 			hiscore_string=self.get_level_times(split_path[1])
 			print hiscore_string
@@ -134,7 +136,10 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
     		port=db_url.port
 		)
 		cur=db_conn.cursor()
-		cur.execute("CREATE TABLE IF NOT EXISTS TIMES (id serial PRIMARY KEY,IP varchar,LEVEL varchar, time float, time_played float);")
+		try:
+			cur.execute("CREATE TABLE IF NOT EXISTS TIMES (id serial PRIMARY KEY,IP varchar,LEVEL varchar, time float, time_played float);")
+		except:
+			pass
 		cur.execute("SELECT * FROM TIMES WHERE IP=\'"+ip+"\' AND LEVEL=\'"+level+"\';")
 		player_row=cur.fetchone()
 		to_return=True
