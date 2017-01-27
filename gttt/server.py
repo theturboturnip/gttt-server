@@ -36,9 +36,10 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 					self.wfile.write("y\nAdded time "+str(time_taken)+" to ip "+ip+" on level "+str(level))
 				else:
 					self.wfile.write("n\nDidn't add time, probably because it was longer than before")
-			except:
+			except Exception, e:
 				self.wfile.write("n\nFailed to add time, something went wrong")
-				traceb=traceback.print_exc()
+				traceb=str(e)
+				print e
 				self.wfile.write("\n"+traceb)
 				print "FAILED TO ADD TIME"
 		elif split_path[0]=="get_times" and len(split_path)>=2:
