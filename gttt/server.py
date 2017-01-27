@@ -26,13 +26,17 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		elif split_path[0]=="submit_time" and len(split_path)>=5:
 			#perform a verification check 
 			level=split_path[1]
+
 			ip=split_path[2]
 			time_taken=float(split_path[3])
 			verified=self.verify_client(time_taken,split_path[4])
 			try:
+				if (not level.isdigit()) or "/" in level or " " in level:
+					#print "Invalid Level"
+					raise ValueError("Invalid Level, SQL Injection attack?")
 				if not verified:
-					print "Client verification failed"
-					self.wfile.write("Client verification failed")
+					#print "Client verification failed"
+					#self.wfile.write("Client verification failed")
 					raise ValueError("Client verification failed")
 				if self.add_level_time(level,time_taken,ip):
 					self.wfile.write("y\nAdded time "+str(time_taken)+" to ip "+ip+" on level "+str(level))
@@ -45,12 +49,21 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 				#self.wfile.write("\n"+traceb)
 				print "FAILED TO ADD TIME"
 		elif split_path[0]=="get_times" and len(split_path)>=2:
-			self.wfile.write("Have some delicious hiscores")
-			hiscore_string=self.get_level_times(split_path[1])
-			print hiscore_string
-			self.wfile.write("\n"+hiscore_string)
+			#self.wfile.write("Have some delicious hiscores")
+			level=split_path[1]
+			if (not level.isdigit() and "p-" not in level) or "/" in level or " " in level:
+				#print "Invalid Level"
+				print ("Invalid Level, SQL Injection attack?")
+				self.wfile.write("n\nInvalid level")
+			else:
+				hiscore_string=self.get_level_times(split_path[1])
+				print hiscore_string
+				self.wfile.write("y\n"+hiscore_string)
 		elif split_path[0]=="get_procgen_levels":
-			self.wfile.write(self.get_seeds_by_time())
+			amount=5
+			if len(split_path)>1:
+				amount=int(split_path[1])
+			self.wfile.write(self.get_seeds_by_time(amount))
 		elif split_path[0]=="verify":
 			verified=self.verify_client(float(split_path[1]),split_path[2])
 			if verified:
@@ -99,7 +112,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 			hiscore_string+=str(hiscore[3])+"\n"
 		return hiscore_string
 
-	def get_seeds_by_time(self):
+	def get_seeds_by_time(self,amount):
 		db_conn = psycopg2.connect(
     		database=db_url.path[1:],
     		user=db_url.username,
@@ -113,7 +126,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 			#cur.execute("INSERT INTO LVL"+str(level)+" (time) VALUES (3)")
 		except:
 			pass #the table already existed
-		cur.execute("SELECT LEVEL FROM TIMES WHERE LEVEL LIKE 'p-%' ORDER BY time_played DESC;")
+		cur.execute("SELECT LEVEL,time FROM TIMES WHERE LEVEL LIKE 'p-%' ORDER BY time_played DESC;")
 		seeds=cur.fetchall()
 		
 		db_conn.commit()
@@ -122,12 +135,12 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		#convert to string
 		used_seeds=[]
 		seed_string=""
-		for seed in seeds:
+		for seed in seeds[0:amount]:
 			print seed
 			if seed[0] in used_seeds:
 				continue
 			used_seeds.append(seed[0])
-			seed_string+=seed[0]+"\n"
+			seed_string+=seed[0]+" "+str(seed[1])+"\n"
 		return seed_string
 
 	def add_level_time(self,level,time_taken,ip):
@@ -148,7 +161,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		to_return=True
 		if player_row is None:
 			cur.execute("INSERT INTO TIMES (IP,LEVEL,time,time_played) VALUES (\'"+ip+"\',\'"+level+"\',"+str(time_taken)+","+str(time.time())+");")
-		elif player_row[3]>time_taken:
+		elif player_row[3]>time_taken or player_row[3]<0:
 			cur.execute("UPDATE TIMES SET time="+str(time_taken)+" AND time_played="+str(time.time())+" WHERE IP=\'"+ip+"\' AND LEVEL=\'"+level+"\';")
 		else:
 			to_return=False
