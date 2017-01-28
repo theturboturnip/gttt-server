@@ -22,7 +22,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		split_path=filter(None,self.path.split("/"))
 
 		if (split_path==[] or split_path[0]=="version"):
-			self.wfile.write("1.0.0")
+			self.wfile.write(os.environ["GTTT_CLIENT_VERSION"])
 		elif split_path[0]=="submit_time" and len(split_path)>=5:
 			#perform a verification check 
 			level=split_path[1]
