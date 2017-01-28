@@ -109,7 +109,8 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		#convert to string
 		hiscore_string=""
 		for hiscore in hiscores:
-			if (hiscore[3]<0) return
+			if (hiscore[3]<0):
+				return
 			print hiscore
 			hiscore_string+=format_time(hiscore[3])+"\n"
 		return hiscore_string
