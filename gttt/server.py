@@ -31,7 +31,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 			time_taken=float(split_path[3])
 			verified=self.verify_client(time_taken,split_path[4])
 			try:
-				if (not level.isdigit() and level[0:2] is not "p-") or "\'" in level or "\"" in level:
+				if (not level.isdigit() and level[0:2] == "p-") or "\'" in level or "\"" in level:
 					#print "Invalid Level"
 					raise ValueError("Invalid Level, SQL Injection attack?")
 				if not verified:
@@ -52,7 +52,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		elif split_path[0]=="get_times" and len(split_path)>=2:
 			#self.wfile.write("Have some delicious hiscores")
 			level=split_path[1]
-			if ((not level.isdigit()) and (level[0:2] is not "p-")) or "\'" in level or "\"" in level:
+			if ((not level.isdigit()) and (level[0:2] == "p-")) or "\'" in level or "\"" in level:
 				#print "Invalid Level"
 				raise ValueError("Invalid Level, SQL Injection attack?")
 				self.wfile.write("n\nInvalid level")
