@@ -25,21 +25,22 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 			self.wfile.write(os.environ["GTTT_CLIENT_VERSION"])
 		elif split_path[0]=="submit_time" and len(split_path)>=5:
 			#perform a verification check 
-			level="\""+split_path[1]+"\""
+			level=split_path[1]
 
 			ip=split_path[2]
 			time_taken=float(split_path[3])
 			verified=self.verify_client(time_taken,split_path[4])
 			try:
-				"""if (not level.isdigit()) or "/" in level or " " in level:
+				if (not level.isdigit()) or "\'" in level or "\"" in level:
 					#print "Invalid Level"
-					raise ValueError("Invalid Level, SQL Injection attack?")"""
+					raise ValueError("Invalid Level, SQL Injection attack?")
 				if not verified:
 					#print "Client verification failed"
 					#self.wfile.write("Client verification failed")
 					raise ValueError("Client verification failed")
 				if self.add_level_time(level,time_taken,ip):
 					self.wfile.write("y\nAdded time "+str(time_taken)+" to ip "+ip+" on level "+str(level))
+					print "Added time"
 				else:
 					self.wfile.write("n\nDidn't add time, probably because it was longer than before")
 			except Exception, e:
@@ -50,15 +51,15 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 				print "FAILED TO ADD TIME"
 		elif split_path[0]=="get_times" and len(split_path)>=2:
 			#self.wfile.write("Have some delicious hiscores")
-			level="\""+split_path[1]+"\""
-			"""if (not level.isdigit() and "p-" not in level) or "/" in level or " " in level:
+			level=split_path[1]
+			if (not level.isdigit()) or "\'" in level or "\"" in level:
 				#print "Invalid Level"
-				print ("Invalid Level, SQL Injection attack?")
+				raise ValueError("Invalid Level, SQL Injection attack?")
 				self.wfile.write("n\nInvalid level")
-			else:"""
-			hiscore_string=self.get_level_times(split_path[1])
-			print hiscore_string
-			self.wfile.write("y\n"+hiscore_string)
+			else:
+				hiscore_string=self.get_level_times(split_path[1])
+				print hiscore_string
+				self.wfile.write("y\n"+hiscore_string)
 		elif split_path[0]=="get_procgen_levels":
 			amount=5
 			if len(split_path)>1:
@@ -126,7 +127,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 			#cur.execute("INSERT INTO LVL"+str(level)+" (time) VALUES (3)")
 		except:
 			pass #the table already existed
-		cur.execute("SELECT LEVEL,time FROM TIMES WHERE LEVEL LIKE 'p-%' ORDER BY time_played DESC;")
+		cur.execute("SELECT LEVEL,time FROM TIMES WHERE LEVEL LIKE '\"p-%' ORDER BY time_played DESC;")
 		seeds=cur.fetchall()
 		
 		db_conn.commit()
