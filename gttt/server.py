@@ -1,5 +1,5 @@
 from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
-import urlparse,traceback,sys,os,hashlib,time,operator
+import urlparse,traceback,sys,os,hashlib,time,operator,math
 import psycopg2
 
 urlparse.uses_netloc.append("postgres")
