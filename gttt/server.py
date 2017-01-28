@@ -112,7 +112,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 			if (hiscore[3]<0):
 				return
 			print hiscore
-			hiscore_string+=format_time(hiscore[3])+"\n"
+			hiscore_string+=self.format_time(hiscore[3])+"\n"
 		return hiscore_string
 
 	def format_time(self,time_float):
