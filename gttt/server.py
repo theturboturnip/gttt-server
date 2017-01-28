@@ -118,7 +118,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 	def format_time(self,time_float):
 		minutes=math.floor(time_float/60);
 		seconds=time_float%60;
-		return str(minutes).zfill(2)+":"+'{:04.2f}'.format(seconds)
+		return '{:02.0f}'.format(minutes)+":"+'{:04.2f}'.format(seconds)
 
 	def get_seeds_by_time(self,amount):
 		db_conn = psycopg2.connect(
