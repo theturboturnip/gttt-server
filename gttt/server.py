@@ -1,5 +1,5 @@
 from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
-import urlparse,traceback,sys,os,hashlib,time
+import urlparse,traceback,sys,os,hashlib,time,operator
 import psycopg2
 
 urlparse.uses_netloc.append("postgres")
@@ -133,13 +133,16 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		cur.close()
 		db_conn.close()
 		#convert to string
-		used_seeds=[]
+		used_seeds={}
 		seed_string=""
-		for seed in seeds[0:amount]:
-			print seed
-			if seed[0] in used_seeds:
-				continue
-			used_seeds.append(seed[0])
+		for seed in seeds:
+			if seed[0][2:] not in used_seeds:
+				used_seeds[seed[0][2:]]=1
+			else:
+				used_seeds[seed[0][2:]]+=1
+		print used_seeds
+		sorted_seeds=sorted(used_seeds.items(), key=operator.itemgetter(1), reverse=True)
+		for seed in sorted_seeds[0:amount]:
 			seed_string+=seed[0]+" "+str(seed[1])+"\n"
 		return seed_string
 
