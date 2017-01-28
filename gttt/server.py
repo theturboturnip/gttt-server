@@ -127,7 +127,7 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 			#cur.execute("INSERT INTO LVL"+str(level)+" (time) VALUES (3)")
 		except:
 			pass #the table already existed
-		cur.execute("SELECT LEVEL,time FROM TIMES WHERE LEVEL LIKE '\"p-%' ORDER BY time_played DESC;")
+		cur.execute("SELECT LEVEL,time FROM TIMES WHERE LEVEL LIKE 'p-%' ORDER BY time_played DESC;")
 		seeds=cur.fetchall()
 		
 		db_conn.commit()
