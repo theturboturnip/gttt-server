@@ -109,9 +109,15 @@ class GTTTRequestHandler(BaseHTTPRequestHandler):
 		#convert to string
 		hiscore_string=""
 		for hiscore in hiscores:
+			if (hiscore[3]<0) return;
 			print hiscore
-			hiscore_string+=str(hiscore[3])+"\n"
+			hiscore_string+=format_time(hiscore[3])+"\n"
 		return hiscore_string
+
+	def format_time(self,time_float):
+		minutes=math.floor(time_float/60);
+		seconds=time_float%60;
+		return str(minutes).zfill(2)+":"+'{:04.2f}'.format(seconds)
 
 	def get_seeds_by_time(self,amount):
 		db_conn = psycopg2.connect(
